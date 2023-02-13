@@ -222,42 +222,57 @@
                             </div>
                         </div>
                         <div class="tab-pane fade" id="nav-assign" role="tabpanel" aria-labelledby="nav-assign-tab">
-                            <div class="container-fluid py-5 align-middle">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text" id="addon-wrapping">Camera No.</span>
-                                            <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
-                                                aria-describedby="addon-wrapping">
+                            <form action="" method="POST" class="needs-validation" novalidate>
+                                <div class="container-fluid py-5 align-middle">
+                                    <div class="row">
+                                        <div class="col-md-8 col-sm-12">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text" id="addon-wrapping">Camera No.</span>
+                                                <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
+                                                    aria-describedby="addon-wrapping" required>
+                                                <small class="invalid-feedback">
+                                                    Camera No. can't be empty or invalid camera No.
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-sm-12">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text" id="addon-wrapping">Date</span>
+                                                <input type="Date" class="form-control" placeholder="Date" aria-label="Date"
+                                                    aria-describedby="addon-wrapping" required>
+                                                <small class="invalid-feedback">
+                                                    Date can't be empty
+                                                </small>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-4">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text" id="addon-wrapping">Date</span>
-                                            <input type="Date" class="form-control" placeholder="Date" aria-label="Date"
-                                                aria-describedby="addon-wrapping">
+                                    <div class="row">
+                                        <div class="col-md-8 col-sm-12">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text" id="addon-wrapping">Camera Location</span>
+                                                <input type="text" class="form-control" placeholder="Camera Location" aria-label="Camera Location"
+                                                    aria-describedby="addon-wrapping" required>
+                                                <small class="invalid-feedback">
+                                                    Camera Location can't be empty or invalid camera Location
+                                                </small>
+                                            </div>
                                         </div>
+                                        <div class="col-md-4 col-sm-12">
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text" id="addon-wrapping">Time</span>
+                                                <input type="time" class="form-control" placeholder="Time" aria-label="Time"
+                                                    aria-describedby="addon-wrapping" required>
+                                                <small class="invalid-feedback">
+                                                    Time can't be empty
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center me-1 col-sm-12 ">
+                                        <button type="submit" class="btn btn-primary w-25">Apply</button>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text" id="addon-wrapping">Camera Location</span>
-                                            <input type="text" class="form-control" placeholder="Camera Location" aria-label="Camera Location"
-                                                aria-describedby="addon-wrapping">
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text" id="addon-wrapping">Time</span>
-                                            <input type="time" class="form-control" placeholder="Time" aria-label="Time" aria-describedby="addon-wrapping">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row justify-content-end me-1">
-                                    <button class="btn btn-primary w-25">Apply</button>
-                                </div>
-                            </div>
+                            </form>
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
@@ -272,7 +287,7 @@
                                                 allowfullscreen></iframe>
                                         </div>
                             
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center ms-2">
                                             <div class="row">
                                                 <p>Camera No.: </p>
                                                 <p>Requested by </p>
@@ -288,7 +303,7 @@
                                         </div>
                             
                             
-                                        <div class="d-flex align-items-center ">
+                                        <div class="d-flex align-items-center">
                                             <button class="btn btn-success me-3">
                                                 <span>
                                                     <i class="fas fa-check"></i>
@@ -316,7 +331,7 @@
                                                 allowfullscreen></iframe>
                                         </div>
                             
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center ms-2">
                                             <div class="row">
                                                 <p>Camera No.: </p>
                                                 <p>Requested by </p>
@@ -353,23 +368,23 @@
                                         <small class="text-muted">3 days ago</small>
                                     </div>
                                     <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
+                                        <div class="d-flex align-items-center flex-sm-column justify-content-center">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
                                                 title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
                             
-                                        <div class="d-flex align-items-center">
-                                            <div class="row">
+                                        <div class="d-flex align-items-center ms-2 ">
+                                            <div class="d-flex flex-sm-column ">
                                                 <p>Camera No.: </p>
                                                 <p>Requested by </p>
                                             </div>
-                                            <div class="row">
+                                            <div class="d-flex flex-sm-column ">
                                                 <p>Date: </p>
                                                 <p>..... </p>
                                             </div>
-                                            <div class="row">
+                                            <div class="d-flex flex-sm-column ">
                                                 <p>Time: </p>
                                                 <p>Role: </p>
                                             </div>
@@ -406,6 +421,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
         crossorigin="anonymous"></script>
+    <script>
+        var form = document.querySelector(".needs-validation");
+        form.addEventListener("submit", validator);
+
+        'use strict'
+        // Form validation
+        function validator(e) {
+            if (form.checkValidity() == false) {
+                e.preventDefault();
+            }
+            form.classList.add("was-validated");
+        }
+    </script>
 
 </body>
 

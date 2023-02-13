@@ -57,53 +57,84 @@
 
     <main>
         <div class="container py-4">
-
-            <div class="p-5 mb-4 bg-light rounded-3">
-                <div class="container-fluid py-5">
-                    <h2 class="display-10 fw-bold mb-5">Import video file</h2>
-                    <div class="input-group mb-3">
-                        <input type="file" class="form-control" id="inputGroupFile">
-                        <label class="input-group-text btn btn-primary" for="inputGroupFile">Upload</label>
+            <form action="" method="POST" class="needs-validation" novalidate>
+                <div class="p-5 mb-4 bg-light rounded-3">
+                    <div class="container-fluid py-5">
+                        <h2 class="display-10 fw-bold mb-5">Import video file</h2>
+                        <div class="input-group mb-3">
+                            <input type="file" class="form-control" id="inputGroupFile" required>
+                            <label class="input-group-text btn btn-primary" for="inputGroupFile">Upload</label>
+                        </div>
+                        <small class="text-danger">
+                            * Only video file is valid
+                        </small>
                     </div>
                 </div>
-            </div>
-
-            <div class="row align-items-md-stretch">
-                <div class="col-md-12">
-                    <div class="h-100 p-5 border rounded-3">
-                        <h4 class="display-12 fw-bold mb-5">Video Information</h4>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="addon-wrapping">Camera No.</span>
-                            <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
-                                aria-describedby="addon-wrapping">
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="addon-wrapping">Camera's Location</span>
-                            <input type="text" class="form-control" placeholder="Camera's Location"
-                                aria-label="Camera's Location" aria-describedby="addon-wrapping">
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="addon-wrapping">Date</span>
-                            <input type="date" class="form-control" placeholder="Date" aria-label="Date"
-                                aria-describedby="addon-wrapping">
-                        </div>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="addon-wrapping">Time</span>
-                            <input type="time" class="form-control" placeholder="Time" aria-label="Time"
-                                aria-describedby="addon-wrapping">
-                        </div>
-                        <div class="text-end col-12">
-                            <button class="btn btn-primary w-25" type="button">Import</button>
+                
+                <div class="row align-items-md-stretch">
+                    <div class="col-md-12">
+                        <div class="h-100 p-5 border rounded-3">
+                            <h4 class="display-12 fw-bold mb-5">Video Information</h4>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="addon-wrapping">Camera No.</span>
+                                <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
+                                    aria-describedby="addon-wrapping" required>
+                                <small class="invalid-feedback">
+                                    Camera No. can't be empty or invalid camera No.
+                                </small>
+                
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="addon-wrapping">Camera's Location</span>
+                                <input type="text" class="form-control" placeholder="Camera's Location" aria-label="Camera's Location"
+                                    aria-describedby="addon-wrapping" required>
+                                <small class="invalid-feedback">
+                                    Camera Location can't be empty or invalid camera Location
+                                </small>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="addon-wrapping">Date</span>
+                                <input type="date" class="form-control" placeholder="Date" aria-label="Date"
+                                    aria-describedby="addon-wrapping" required>
+                                <small class="invalid-feedback">
+                                    Date can't be empty
+                                </small>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="addon-wrapping">Time</span>
+                                <input type="time" class="form-control" placeholder="Time" aria-label="Time"
+                                    aria-describedby="addon-wrapping" required>
+                                <small class="invalid-feedback">
+                                    Time can't be empty
+                                </small>
+                            </div>
+                            <div class="text-end col-12">
+                                <button class="btn btn-primary w-25" type="submit">Import</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </main>
 
     <footer class="ps-5 mb-3 pt-2 text-muted border-top">
         &copy; Blur and Track, Thammasat University 2023
     </footer>
+
+    <script>
+        var form = document.querySelector(".needs-validation");
+        form.addEventListener("submit", validator);
+
+        'use strict'
+        // Form validation
+        function validator(e) {
+            if (form.checkValidity() == false) {
+                e.preventDefault();
+            }
+            form.classList.add("was-validated");
+        }
+    </script>
 
 </body>
 
