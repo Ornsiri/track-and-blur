@@ -47,24 +47,26 @@
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-center">
                 <ul class="nav col-10 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="{{ url_for('upload')}}" class="nav-link px-2 link-primary">Import</a></li>
+                    <li><a href="{{ url_for('upload_video')}}" class="nav-link px-2 link-primary">Import</a></li>
                     <li><a href="{{ url_for('search') }}" class="nav-link px-2 link-primary">Search</a></li>
+                    {% if session['user_type'] == "Admin" %}
                     <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
                     <li><a href="#" class="nav-link px-2 link-secondary">Permission</a></li>
+                    {% endif %}
                 </ul>
     
                 <div class="dropdown col-2 text-end">
                     <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+                        <img src="{{ filename }}" alt="mdo" width="32" height="32" class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
                         <li><a class="dropdown-item" href="#">Profile</a></li>
                         <li>
                             <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Sign out</a></li>
+                        </li> -->
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
                     </ul>
                 </div>
             </div>
@@ -88,35 +90,36 @@
                         <div class="tab-pane fade show active" id="nav-request" role="tabpanel" aria-labelledby="nav-request-tab">
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
+                                    <div class="d-flex flex-wrap w-100 justify-content-between">
                                         <h5 class="mb-1"></h5>
                                         <small class="text-muted">3 days ago</small>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
-                                                title="YouTube video player" frameborder="0"
+                                    <div
+                                        class="d-flex flex-wrap align-items-center justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                        <div class="d-flex flex-shrink-0 align-items-center justify-content-center mb-3">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
                                 
-                                        <div class="d-flex align-items-center">
-                                            <div class="row">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
+                                        <div class="d-flex flex-grow-1 ps-lg-2 justify-content-between flex-wrap align-items-stretch">
+                                            <div class="flex-fill">
+                                                <p>Camera No.: <strong>01</strong></p>
+                                                <p>Requested by <strong>Ornsiri Kasi</strong> </p>
+                                                <p>Role: <strong>Admin</strong></p>
                                             </div>
-                                            <div class="row">
-                                                <p>Date: </p>
-                                                <p>..... </p>
+                                            <div class="flex-fill">
+                                                <p>Date: 28 Febuary 2023 </p>
+                                                <p>Time: 21:41 PM </p>
                                             </div>
-                                            <div class="row">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
+                                            <!-- <div class="flex-fill">
+                                                                                
+                                                                                <p> </p>
+                                                                            </div> -->
                                         </div>
                                 
                                 
-                                        <div class="d-flex align-items-center ">
+                                        <div class="d-flex align-items-center">
                                             <button class="btn btn-success me-3">
                                                 <span>
                                                     <i class="fas fa-check"></i>
@@ -132,75 +135,31 @@
                                     </div>
                                 </a>
                                 <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
+                                    <div class="d-flex flex-wrap w-100 justify-content-between">
                                         <h5 class="mb-1"></h5>
                                         <small class="text-muted">3 days ago</small>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player"
-                                                frameborder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                allowfullscreen></iframe>
-                                        </div>
-                                        
-                                        <div class="d-flex align-items-center">
-                                            <div class="row">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
-                                            </div>
-                                            <div class="row">
-                                                <p>Date: </p>
-                                                <p>..... </p>
-                                            </div>
-                                            <div class="row">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
-                                        </div>
-                                        
-                                        
-                                        <div class="d-flex align-items-center">
-                                            <button class="btn btn-success me-3">
-                                                <span>
-                                                    <i class="fas fa-check"></i>
-                                                </span> Accept
-                                            </button>
-                                            <button class="btn btn-danger ms-3">
-                                                <span>
-                                                    <i class="fas fa-times"></i>
-                                                </span> Reject
-                                            </button>
-                                        </div>
-                                        
-                                    </div>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between ">
-                                        <h5 class="mb-1"></h5>
-                                        <small class="text-muted">3 days ago</small>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
-                                                title="YouTube video player" frameborder="0"
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                        <div class="d-flex flex-shrink-0 align-items-center justify-content-center mb-3">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
                                 
-                                        <div class="d-flex align-items-center">
-                                            <div class="row">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
+                                        <div class="d-flex flex-grow-1 ps-lg-2 justify-content-between flex-wrap align-items-stretch">
+                                            <div class="flex-fill">
+                                                <p>Camera No.: <strong>01</strong></p>
+                                                <p>Requested by <strong>Ornsiri Kasi</strong> </p>
+                                                <p>Role: <strong>Admin</strong></p>
                                             </div>
-                                            <div class="row">
-                                                <p>Date: </p>
-                                                <p>..... </p>
+                                            <div class="flex-fill">
+                                                <p>Date: 28 Febuary 2023 </p>
+                                                <p>Time: 21:41 PM </p>
                                             </div>
-                                            <div class="row">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
+                                            <!-- <div class="flex-fill">
+                                                
+                                                <p> </p>
+                                            </div> -->
                                         </div>
                                 
                                 
@@ -231,7 +190,7 @@
                                                 <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
                                                     aria-describedby="addon-wrapping" required>
                                                 <small class="invalid-feedback">
-                                                    Camera No. can't be empty or invalid camera No.
+                                                    Camera No. can't be empty
                                                 </small>
                                             </div>
                                         </div>
@@ -253,7 +212,7 @@
                                                 <input type="text" class="form-control" placeholder="Camera Location" aria-label="Camera Location"
                                                     aria-describedby="addon-wrapping" required>
                                                 <small class="invalid-feedback">
-                                                    Camera Location can't be empty or invalid camera Location
+                                                    Camera Location can't be empty
                                                 </small>
                                             </div>
                                         </div>
@@ -275,34 +234,35 @@
                             </form>
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
+                                    <div class="d-flex flex-wrap w-100 justify-content-between">
                                         <h5 class="mb-1"></h5>
                                         <small class="text-muted">3 days ago</small>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
-                                                title="YouTube video player" frameborder="0"
+                                    <div
+                                        class="d-flex flex-wrap align-items-center justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                        <div class="d-flex flex-shrink-0 align-items-center justify-content-center mb-3">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
-                            
-                                        <div class="d-flex align-items-center ms-2">
-                                            <div class="row">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
+                                
+                                        <div class="d-flex flex-grow-1 ps-lg-2 justify-content-between flex-wrap align-items-stretch">
+                                            <div class="flex-fill">
+                                                <p>Camera No.: <strong>01</strong></p>
+                                                <p>Requested by <strong>Ornsiri Kasi</strong> </p>
+                                                <p>Role: <strong>Admin</strong></p>
                                             </div>
-                                            <div class="row">
-                                                <p>Date: </p>
-                                                <p>..... </p>
+                                            <div class="flex-fill">
+                                                <p>Date: 28 Febuary 2023 </p>
+                                                <p>Time: 21:41 PM </p>
                                             </div>
-                                            <div class="row">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
+                                            <!-- <div class="flex-fill">
+                                                                                
+                                                                                <p> </p>
+                                                                            </div> -->
                                         </div>
-                            
-                            
+                                
+                                
                                         <div class="d-flex align-items-center">
                                             <button class="btn btn-success me-3">
                                                 <span>
@@ -315,38 +275,39 @@
                                                 </span> Reject
                                             </button>
                                         </div>
-                            
+                                
                                     </div>
                                 </a>
                                 <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
+                                    <div class="d-flex flex-wrap w-100 justify-content-between">
                                         <h5 class="mb-1"></h5>
                                         <small class="text-muted">3 days ago</small>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center justify-content-center">
-                                            <iframe width="280" height="158" src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
-                                                title="YouTube video player" frameborder="0"
+                                    <div
+                                        class="d-flex flex-wrap align-items-center justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                        <div class="d-flex flex-shrink-0 align-items-center justify-content-center mb-3">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
-                            
-                                        <div class="d-flex align-items-center ms-2">
-                                            <div class="row">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
+                                
+                                        <div class="d-flex flex-grow-1 ps-lg-2 justify-content-between flex-wrap align-items-stretch">
+                                            <div class="flex-fill">
+                                                <p>Camera No.: <strong>01</strong></p>
+                                                <p>Requested by <strong>Ornsiri Kasi</strong> </p>
+                                                <p>Role: <strong>Admin</strong></p>
                                             </div>
-                                            <div class="row">
-                                                <p>Date: </p>
-                                                <p>..... </p>
+                                            <div class="flex-fill">
+                                                <p>Date: 28 Febuary 2023 </p>
+                                                <p>Time: 21:41 PM </p>
                                             </div>
-                                            <div class="row">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
+                                            <!-- <div class="flex-fill">
+                                                                                
+                                                                                <p> </p>
+                                                                            </div> -->
                                         </div>
-                            
-                            
+                                
+                                
                                         <div class="d-flex align-items-center">
                                             <button class="btn btn-success me-3">
                                                 <span>
@@ -359,38 +320,39 @@
                                                 </span> Reject
                                             </button>
                                         </div>
-                            
+                                
                                     </div>
                                 </a>
                                 <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between ">
+                                    <div class="d-flex flex-wrap w-100 justify-content-between">
                                         <h5 class="mb-1"></h5>
                                         <small class="text-muted">3 days ago</small>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-3">
-                                        <div class="d-flex align-items-center flex-sm-column justify-content-center">
-                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac"
-                                                title="YouTube video player" frameborder="0"
+                                    <div
+                                        class="d-flex flex-wrap align-items-center justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                        <div class="d-flex flex-shrink-0 align-items-center justify-content-center mb-3">
+                                            <iframe src="https://www.youtube.com/embed/rf9yQ2Hh5ac" title="YouTube video player" frameborder="0"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen></iframe>
                                         </div>
-                            
-                                        <div class="d-flex align-items-center ms-2 ">
-                                            <div class="d-flex flex-sm-column ">
-                                                <p>Camera No.: </p>
-                                                <p>Requested by </p>
+                                
+                                        <div class="d-flex flex-grow-1 ps-lg-2 justify-content-between flex-wrap align-items-stretch">
+                                            <div class="flex-fill">
+                                                <p>Camera No.: <strong>01</strong></p>
+                                                <p>Requested by <strong>Ornsiri Kasi</strong> </p>
+                                                <p>Role: <strong>Admin</strong></p>
                                             </div>
-                                            <div class="d-flex flex-sm-column ">
-                                                <p>Date: </p>
-                                                <p>..... </p>
+                                            <div class="flex-fill">
+                                                <p>Date: 28 Febuary 2023 </p>
+                                                <p>Time: 21:41 PM </p>
                                             </div>
-                                            <div class="d-flex flex-sm-column ">
-                                                <p>Time: </p>
-                                                <p>Role: </p>
-                                            </div>
+                                            <!-- <div class="flex-fill">
+                                                                                
+                                                                                <p> </p>
+                                                                            </div> -->
                                         </div>
-                            
-                            
+                                
+                                
                                         <div class="d-flex align-items-center">
                                             <button class="btn btn-success me-3">
                                                 <span>
@@ -403,7 +365,7 @@
                                                 </span> Reject
                                             </button>
                                         </div>
-                            
+                                
                                     </div>
                                 </a>
                             </div>

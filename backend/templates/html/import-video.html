@@ -33,22 +33,25 @@
                 <ul class="nav col-10 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
                     <li><a href="#" class="nav-link px-2 link-secondary">Import</a></li>
                     <li><a href="{{ url_for('search') }}" class="nav-link px-2 link-primary">Search</a></li>
-                    <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
-                    <li><a href="{{ url_for('permission') }}" class="nav-link px-2 link-primary">Permission</a></li>
+                    {% if session['user_type'] == "Admin" %}
+                        <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
+                        <li><a href="{{ url_for('permission') }}" class="nav-link px-2 link-primary">Permission</a></li>
+                    {% endif %}
                 </ul>
 
                 <div class="dropdown col-2 text-end">
                     <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+                        <!-- <p> {{ session.user_username }}</p> -->
+                        <img src="{{ filename }}" alt="mdo" width="32" height="32" class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li>
+                        <!-- <li><a class="dropdown-item" href="#">Settings</a></li> -->
+                        <!-- <li><a class="dropdown-item" href="#">Profile</a></li> -->
+                        <!-- <li>
                             <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="#">Sign out</a></li>
+                        </li> -->
+                        <li><a class="dropdown-item" href={{ url_for('logout') }}>Sign out</a></li>
                     </ul>
                 </div>
             </div>
@@ -80,7 +83,7 @@
                                 <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
                                     aria-describedby="addon-wrapping" required>
                                 <small class="invalid-feedback">
-                                    Camera No. can't be empty or invalid camera No.
+                                    Camera No. can't be empty
                                 </small>
                 
                             </div>
@@ -89,7 +92,7 @@
                                 <input type="text" class="form-control" placeholder="Camera's Location" aria-label="Camera's Location"
                                     aria-describedby="addon-wrapping" required>
                                 <small class="invalid-feedback">
-                                    Camera Location can't be empty or invalid camera Location
+                                    Camera Location can't be empty
                                 </small>
                             </div>
                             <div class="input-group mb-3">

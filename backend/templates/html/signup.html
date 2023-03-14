@@ -47,24 +47,26 @@
     <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-center">
             <ul class="nav col-10 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="{{ url_for('upload')}}" class="nav-link px-2 link-primary">Import</a></li>
+                <li><a href="{{ url_for('upload_video')}}" class="nav-link px-2 link-primary">Import</a></li>
                 <li><a href="{{ url_for('search') }}" class="nav-link px-2 link-primary">Search</a></li>
+                {% if session['user_type'] == "Admin" %}
                 <li><a href="" class="nav-link px-2 link-secondary">Register</a></li>
                 <li><a href="{{ url_for('permission') }}" class="nav-link px-2 link-primary">Permission</a></li>
+                {% endif %}
             </ul>
 
             <div class="dropdown col-2 text-end">
                 <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
                     data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+                    <img src="{{ filename }}" alt="mdo" width="32" height="32" class="rounded-circle">
                 </a>
                 <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><a class="dropdown-item" href="#">Profile</a></li>
                     <li>
                         <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item" href="#">Sign out</a></li>
+                    </li> -->
+                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
                 </ul>
             </div>
         </div>
@@ -74,8 +76,17 @@
         <div class="container py-4" style="height: 100%;">
             <div class="p-5 mb-4 bg-light rounded-3">
                 <div class="container-fluid">
-                    <form class="needs-validation" action="{{ url_for('signup') }}" method="POST" autocomplete="off" novalidate>
+                    <form class="needs-validation" action="{{ url_for('signup') }}" method="POST" autocomplete="off" enctype="multipart/form-data" novalidate>
                         <h4 class="display-12 fw-bold mb-5">Register</h4>
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    {% for category,message in messages %}
+                                        <div class="alert alert-{{ category }}">
+                                            <strong>{{ message }}</strong>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="input-group mb-3">
@@ -83,7 +94,7 @@
                                     <input type="text" class="form-control" placeholder="Firstname" aria-label="Firstname"
                                         aria-describedby="addon-wrapping" id="fname" name="fname" required>
                                     <small class="invalid-feedback">
-                                        First name can't be empty or invalid first name
+                                        First name can't be empty
                                     </small>
                                 </div>
                             </div>
@@ -93,7 +104,7 @@
                                     <input type="text" class="form-control" placeholder="Lastname" aria-label="Lastname"
                                         aria-describedby="addon-wrapping" id="lname" name="lname" required>
                                     <small class="invalid-feedback">
-                                        Last name can't be empty or invalid last name
+                                        Last name can't be empty
                                     </small>
                                 </div>
                             </div>
@@ -105,7 +116,7 @@
                                     <input type="email" class="form-control" placeholder="Email" aria-label="Email"
                                         aria-describedby="addon-wrapping" id="email" name="email" required>
                                     <small class="invalid-feedback">
-                                        Email can't be empty or invalid email
+                                        Email can't be empty
                                     </small>
                                 </div>
                             </div>
@@ -119,7 +130,7 @@
                                         <i class="fas fa-eye-slash d-none" id="hide_eye"></i>
                                     </span>
                                     <small class="invalid-feedback">
-                                        Password can't be empty or invalid password
+                                        Password can't be empty
                                     </small>
                                 </div>
                             </div>
@@ -131,7 +142,7 @@
                                     <input type="tel" class="form-control" placeholder="Telephone No." aria-label="Telephone"
                                         aria-describedby="addon-wrapping" id="tel" name="tel" required>
                                     <small class="invalid-feedback">
-                                        Telephone is empty or invalid telephone
+                                        Telephone is empty
                                     </small>
                                 </div>
                             </div>
@@ -153,7 +164,7 @@
                                     <input type="text" class="form-control" placeholder="Department/Sector" aria-label="Department/Sector"
                                         aria-describedby="addon-wrapping" id="department" name="department" required>
                                     <small class="invalid-feedback">
-                                        Department/Sectoer can't be empty
+                                        Department/Sector can't be empty
                                     </small>
                                 </div>
                             </div>
@@ -163,7 +174,6 @@
                                     <select class="form-select" id="userGroup" id="user_type" name="user_type" required>
                                         <option value="1">Admin</option>
                                         <option value="2">User</option>
-                                        <option value="3">Outsider</option>
                                     </select>
                                 </div>
                                 <small class="invalid-feedback">
@@ -175,23 +185,16 @@
                             <div class="input-group">
                                 <label class="input-group-text" for="register-img">Upload Image</label>
                                 <input type="file" class="form-control" id="user_register_img" name="user_register_img" 
-                                    aria-describedby="Upload Image" aria-label="Upload Image" required>
-                                {% with messages = get_flashed_messages() %}
-                                {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-success">
-                                        <strong>{{ message }}</strong>
-                                    </div>
-                                {% endfor %}
-                                {% endif %}
-                                {% endwith %}
+                                    aria-describedby="Upload Image" aria-label="Upload Image">
                             </div>
                             <small class="text-danger">
                                 * Only image file with .jpg, .jpeg, .png is valid
                             </small>
                         </div>
-                        <div class="flex-row d-flex justify-content-center mt-3 p-2">
-                            <button type="submit" class="w-25 btn btn-primary">Register</button>
+                        <div class="flex-row d-flex justify-content-center align-items-center mt-3 p-2">
+                            <a href="{{ url_for('signup') }}"></a>
+                                <button type="submit" class="w-25 btn btn-primary">Register</button>
+                            </a>
                         </div>
                     </form>
                 </div>
