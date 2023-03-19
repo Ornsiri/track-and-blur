@@ -82,8 +82,10 @@
                         <div class="nav nav-tabs" id="permission-tab" role="tablist">
                             <button class="nav-link active" id="nav-request-tab" data-bs-toggle="tab" data-bs-target="#nav-request" type="button"
                                 role="tab" aria-controls="nav-request" aria-selected="true">Permission Request</button>
+                            {% if session['user_type'] == "Admin" %}
                             <button class="nav-link" id="nav-assign-tab" data-bs-toggle="tab" data-bs-target="#nav-assign" type="button"
                                 role="tab" aria-controls="nav-assign" aria-selected="false">Assign Permission</button>
+                            {% endif %}
                         </div>
                     </nav>
                     <div class="tab-content mt-3" id="nav-tab-content">
@@ -346,10 +348,6 @@
                                                 <p>Date: 28 Febuary 2023 </p>
                                                 <p>Time: 21:41 PM </p>
                                             </div>
-                                            <!-- <div class="flex-fill">
-                                                                                
-                                                                                <p> </p>
-                                                                            </div> -->
                                         </div>
                                 
                                 

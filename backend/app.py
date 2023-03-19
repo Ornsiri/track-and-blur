@@ -17,12 +17,15 @@ app.config.from_object(env_config)
 db=SQLAlchemy(app)
 
 from models.User import User
+from models.Video import Video
 
 UPLOAD_USER_IMG = 'static/assets/upload_usr_img'
+# UPLOAD_VIDEO_BLUR = 'static/assets/upload_videos/blur/'
+UPLOAD_VIDEO_UNBLUR = 'static/assets/upload_videos/unblur/'
 ALLOWED_IMG_EXTENSIONS = set(['jpeg','jpg','png'])
 
 app.config['UPLOAD_USER_IMG'] = UPLOAD_USER_IMG
-# app.config['UPLOAD_VIDEO'] = UPLOAD_VIDEO
+app.config['UPLOAD_VIDEO_UNBLUR'] = UPLOAD_VIDEO_UNBLUR
 
 # ALLOWED_VIDEO_EXTENSIONS = set([])
 
@@ -35,7 +38,7 @@ app.config['UPLOAD_USER_IMG'] = UPLOAD_USER_IMG
 
 connection = psycopg2.connect(dbname=app.config['DB_NAME'], user=app.config['DB_USERNAME'], 
                 password=app.config['DB_PASSWORD'], host=app.config['DB_HOST'] ) 
-
+print(app.config["SECRET_KEY"])
 def allowed_img_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_IMG_EXTENSIONS
 
@@ -186,8 +189,43 @@ def search():
         if session['user_img_file']:
             filename = secure_filename(session['user_img_file'])
             img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
+            
         return render_template('html/search.html', filename=img_filepath)
     return render_template('html/signin.html')
+
+@app.route('/search-video',methods=['POST','GET'] )
+def get_search_video() :
+    if 'loggedin' in session:
+        if request.method == 'POST' and \
+        'startdate' in request.form and \
+        'enddate' in request.form :
+            _camerano = request.form['camerano']
+            _startdate = request.form['startdate']
+            _enddate = request.form['enddate']
+            _starttime = request.form['starttime']
+            _endtime = request.form['endtime']
+
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('select * from videos where (vid_datetime between %s and %s) and vid_type = %s', (_startdate+" "+_starttime,_enddate +" "+_endtime,'blur',))
+            # cursor.execute('SELECT * FROM users WHERE user_username = %s', (_username,))
+
+            videos = cursor.fetchall()
+
+            if len(videos) == 0:
+                flash("No video result","danger")
+
+            # for video in videos:
+            #     print(video)
+        
+            # print(_camerano)
+            # print(_startdate)
+            # print(_enddate)
+            # print(_starttime)
+            # print(_endtime)
+        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_UNBLUR )
+    return render_template('html/signin.html')
+        
+
 
 @app.route('/permission')
 def permission():

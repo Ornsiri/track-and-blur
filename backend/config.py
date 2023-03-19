@@ -20,9 +20,8 @@ class Config(object):
 
     SESSION_COOKIE_SECURE = True
 
-    MODEL_ADMIN = './models/Admin.py'
-
 class ProductionConfig(Config):
+    
     DEBUG = False
 
 
