@@ -58,7 +58,7 @@
             <div class="dropdown col-2 text-end">
                 <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
                     data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="{{ filename }}" alt="mdo" width="32" height="32" class="rounded-circle">
+                    <img src="{{ session['user_img_file'] }}" alt="mdo" width="32" height="32" class="rounded-circle">
                 </a>
                 <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
                     <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -192,9 +192,8 @@
                             </small>
                         </div>
                         <div class="flex-row d-flex justify-content-center align-items-center mt-3 p-2">
-                            <a href="{{ url_for('signup') }}"></a>
+                            <!-- <a href="{{ url_for('signup') }}"></a> -->
                                 <button type="submit" class="w-25 btn btn-primary">Register</button>
-                            </a>
                         </div>
                     </form>
                 </div>

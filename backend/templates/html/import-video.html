@@ -43,7 +43,7 @@
                     <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         <!-- <p> {{ session.user_username }}</p> -->
-                        <img src="{{ filename }}" alt="mdo" width="32" height="32" class="rounded-circle">
+                        <img src="{{ session['user_img_file'] }}" alt="mdo" width="32" height="32" class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
                         <!-- <li><a class="dropdown-item" href="#">Settings</a></li> -->
@@ -60,12 +60,12 @@
 
     <main>
         <div class="container py-4">
-            <form action="" method="POST" class="needs-validation" novalidate>
+            <form action="{{ url_for('upload_video_file') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
                 <div class="p-5 mb-4 bg-light rounded-3">
                     <div class="container-fluid py-5">
                         <h2 class="display-10 fw-bold mb-5">Import video file</h2>
                         <div class="input-group mb-3">
-                            <input type="file" class="form-control" id="inputGroupFile" required>
+                            <input type="file" name=videofile class="form-control" id="inputGroupFile" required>
                             <label class="input-group-text btn btn-primary" for="inputGroupFile">Upload</label>
                         </div>
                         <small class="text-danger">
@@ -80,8 +80,8 @@
                             <h4 class="display-12 fw-bold mb-5">Video Information</h4>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="addon-wrapping">Camera No.</span>
-                                <input type="text" class="form-control" placeholder="Camera No." aria-label="Camera No."
-                                    aria-describedby="addon-wrapping" required>
+                                <input type="text" name="camerano" class="form-control" placeholder="Camera No." aria-label="Camera No."
+                                    aria-describedby="addon-wrapping">
                                 <small class="invalid-feedback">
                                     Camera No. can't be empty
                                 </small>
@@ -89,15 +89,15 @@
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="addon-wrapping">Camera's Location</span>
-                                <input type="text" class="form-control" placeholder="Camera's Location" aria-label="Camera's Location"
-                                    aria-describedby="addon-wrapping" required>
+                                <input type="text" name="cameralocation" class="form-control" placeholder="Camera's Location" aria-label="Camera's Location"
+                                    aria-describedby="addon-wrapping">
                                 <small class="invalid-feedback">
                                     Camera Location can't be empty
                                 </small>
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="addon-wrapping">Date</span>
-                                <input type="date" class="form-control" placeholder="Date" aria-label="Date"
+                                <input type="date" name="datepost" class="form-control" placeholder="Date" aria-label="Date"
                                     aria-describedby="addon-wrapping" required>
                                 <small class="invalid-feedback">
                                     Date can't be empty
@@ -105,14 +105,17 @@
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="addon-wrapping">Time</span>
-                                <input type="time" class="form-control" placeholder="Time" aria-label="Time"
+                                <input type="time" name="timepost" class="form-control" placeholder="Time" aria-label="Time"
                                     aria-describedby="addon-wrapping" required>
                                 <small class="invalid-feedback">
                                     Time can't be empty
                                 </small>
                             </div>
                             <div class="text-end col-12">
+                                <!-- <a href="{{ url_for('upload_video_file') }}">
+                                </a> -->
                                 <button class="btn btn-primary w-25" type="submit">Import</button>
+
                             </div>
                         </div>
                     </div>

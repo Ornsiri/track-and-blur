@@ -3,6 +3,7 @@ import psycopg2
 import psycopg2.extras
 import urllib.request
 
+from blur_module.vid2blur import blurvid
 from flask import Flask, jsonify, render_template, request,flash,url_for, session, redirect, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -20,21 +21,14 @@ from models.User import User
 from models.Video import Video
 
 UPLOAD_USER_IMG = 'static/assets/upload_usr_img'
-# UPLOAD_VIDEO_BLUR = 'static/assets/upload_videos/blur/'
+UPLOAD_VIDEO_BLUR = 'static/assets/upload_videos/blur/'
 UPLOAD_VIDEO_UNBLUR = 'static/assets/upload_videos/unblur/'
 ALLOWED_IMG_EXTENSIONS = set(['jpeg','jpg','png'])
+ALLOWED_VIDEO_EXTENSIONS = set(['mp4','mov'])
 
 app.config['UPLOAD_USER_IMG'] = UPLOAD_USER_IMG
 app.config['UPLOAD_VIDEO_UNBLUR'] = UPLOAD_VIDEO_UNBLUR
-
-# ALLOWED_VIDEO_EXTENSIONS = set([])
-
-# DB_HOST = "localhost"
-# DB_NAME = "track_and_blur"
-# DB_USER = "postgres"
-# DB_PASS = "admin"
-
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:admin@localhost/track_and_blur'
+app.config['UPLOAD_VIDEO_BLUR'] = UPLOAD_VIDEO_BLUR
 
 connection = psycopg2.connect(dbname=app.config['DB_NAME'], user=app.config['DB_USERNAME'], 
                 password=app.config['DB_PASSWORD'], host=app.config['DB_HOST'] ) 
@@ -42,14 +36,15 @@ print(app.config["SECRET_KEY"])
 def allowed_img_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_IMG_EXTENSIONS
 
-# def allowed_video_file(filename):
-#     return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
+def allowed_video_file(filename):
+    return '.' in filename and filename.rsplit('.',1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
 
 # @app.route('/')
 # def index():
 #     print(app.config)
 #     secret_key = app.config.get("SECRET_KEY")
 #     return f"The configured secret key is {secret_key}."
+
 
 @app.route('/')
 def landing():
@@ -58,17 +53,37 @@ def landing():
 @app.route('/import-video')
 def upload_video():
     if 'loggedin' in session:
-        if session['user_img_file']:
-            filename = secure_filename(session['user_img_file'])
-            img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
-        return render_template('html/import-video.html', filename=img_filepath)
-    
+        return render_template('html/import-video.html', session = session)
     return redirect(url_for('signin'))
 
-@app.route('/uploads/<filename>')
-def get_file(filename):
-    return redirect(url_for('static',filename='upload_usr_img/'+filename))
-    # return send_from_directory(app.config['UPLOAD_USER_IMG'], filename)
+@app.route('/import-video', methods=['POST','GET'])
+def upload_video_file():
+    if 'loggedin' in session:
+        if request.method == 'POST' and \
+            'videofile' in request.files and \
+            'datepost' in request.form and \
+            'timepost' in request.form:
+            _videofile  = request.files['videofile']
+            _camerano = request.form['camerano']
+            _cameralocation = request.form['cameralocation']
+            _datepost = request.form['datepost']
+            _timepost = request.form['timepost']
+            if _videofile.filename and allowed_video_file(_videofile.filename):
+                filename = secure_filename(_videofile.filename)
+                video_unblur_path = os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename)
+                # _videofile.save(os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename))
+                _videofile.save(video_unblur_path)
+                
+                blurvid(video_unblur_path,app.config['UPLOAD_VIDEO_BLUR'],filename)
+            
+            print(filename)
+            print(_camerano)
+            print(_cameralocation)
+            print(_datepost)
+            print(_timepost)
+
+        return render_template('html/import-video.html',session = session)
+    return redirect(url_for('signin'))
 
 @app.route('/signin', methods=['POST','GET'])
 def signin():
@@ -79,7 +94,7 @@ def signin():
         cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute('SELECT * FROM users WHERE user_username = %s', (_username,))
         user = cursor.fetchone()
-        # print(user)
+        print(user)
         if user:
             if check_password_hash(user['user_password'],_password):
                 if user['user_type'] == "Admin":
@@ -98,7 +113,11 @@ def signin():
                     if session['user_img_file']:
                         filename = secure_filename(session['user_img_file'])
                         img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
-                    print(img_filepath)
+                        session['user_img_file'] = img_filepath
+                    # print(img_filepath)
+                    # print(session)
+                    return redirect(url_for('upload_video'))
+                
                 elif user['user_type'] == "User":
                     session['loggedin'] = True
                     session['user_id'] = user['user_id']
@@ -115,9 +134,8 @@ def signin():
                     if session['user_img_file']:
                         filename = secure_filename(session['user_img_file'])
                         img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
-                    print(img_filepath)
-                
-                return render_template('html/import-video.html', filename=img_filepath,user_type = user['user_type'])
+                    # print(img_filepath)
+                    return redirect(url_for('upload_video'))
             else:
                 flash("Invalid username or password","danger")
         else:
@@ -127,9 +145,6 @@ def signin():
 @app.route('/signup', methods=['POST','GET'])
 def signup():
     if 'loggedin' in session:
-        if session['user_img_file']:
-            filename = secure_filename(session['user_img_file'])
-            img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
         if request.method == 'POST' and \
         'fname' in request.form and \
         'lname' in request.form and \
@@ -171,7 +186,7 @@ def signup():
                     db.session.add(user)
                     db.session.commit()
                     flash('A new user successfully added', 'success')
-                    return render_template('html/signup.html', filename=img_filepath)
+                    return render_template('html/signup.html', session=session)
 
                 elif str(_user_type) == "2":
                     _user_type = "User"
@@ -179,22 +194,18 @@ def signup():
                     db.session.add(user)
                     db.session.commit()
                     flash('A new user successfully added', 'success')
-                    return render_template('html/signup.html', filename=img_filepath)
-        return render_template('html/signup.html', filename=img_filepath)
-    return render_template('html/signin.html')
+                    return render_template('html/signup.html', session=session)
+        return render_template('html/signup.html', session=session)
+    return redirect(url_for('signin'))
 
 @app.route('/search-video')
 def search():
     if 'loggedin' in session:
-        if session['user_img_file']:
-            filename = secure_filename(session['user_img_file'])
-            img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
-            
-        return render_template('html/search.html', filename=img_filepath)
-    return render_template('html/signin.html')
+        return render_template('html/search.html', session=session)
+    return redirect(url_for('signin'))
 
 @app.route('/search-video',methods=['POST','GET'] )
-def get_search_video() :
+def get_search_video():
     if 'loggedin' in session:
         if request.method == 'POST' and \
         'startdate' in request.form and \
@@ -222,19 +233,17 @@ def get_search_video() :
             # print(_enddate)
             # print(_starttime)
             # print(_endtime)
-        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_UNBLUR )
-    return render_template('html/signin.html')
-        
-
+        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_UNBLUR,session=session )
+    return redirect(url_for('signin'))
 
 @app.route('/permission')
 def permission():
     if 'loggedin' in session:
-        if session['user_img_file']:
-            filename = secure_filename(session['user_img_file'])
-            img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
-        return render_template('html/permission.html', filename=img_filepath)
-    return render_template('html/signin.html')
+        # if session['user_img_file']:
+        #     filename = secure_filename(session['user_img_file'])
+        #     img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
+        return render_template('html/permission.html', session=session)
+    return redirect(url_for('signin'))
 
 @app.route('/logout')
 def logout():
