@@ -3,11 +3,10 @@ import psycopg2
 import psycopg2.extras
 import urllib.request
 
-from blur_module.vid2blur import blurvid
+from vid2blur import blurvid
 from flask import Flask, jsonify, render_template, request,flash,url_for, session, redirect, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
 from werkzeug.security import generate_password_hash,check_password_hash
 from werkzeug.utils import secure_filename
 
