@@ -28,7 +28,7 @@ def blurvid(inpath, outpath, filename):
 
     frameSize = (width, height)
     # out = cv2.VideoWriter('output_video1.mp4',cv2.VideoWriter_fourcc(*'H264'), 1, frameSize)
-    out = cv2.VideoWriter(path+outpath + 'output_' + filename + '.mp4', cv2.VideoWriter_fourcc(*'H264'), 1, frameSize)
+    out = cv2.VideoWriter(path+outpath + 'output_' + filename, cv2.VideoWriter_fourcc(*'H264'), 1, frameSize)
 
     count = 0
 
@@ -89,6 +89,7 @@ def blurvid(inpath, outpath, filename):
 
     out.release
     print('Done')
+
     # print('Count: ',count)
 
 
@@ -104,12 +105,12 @@ def blurvid(inpath, outpath, filename):
 
 
 # config input video's path & output's video path
-inpath = path+"tomp.mp4"
-outpath = path
+# inpath = path+"tomp.mp4"
+# outpath = path
 
 
-# print(os.path.isfile('test.mp4'))
-print(os.path.realpath('app.py'))
+# # print(os.path.isfile('test.mp4'))
+# print(os.path.realpath('app.py'))
 
 
 # run function

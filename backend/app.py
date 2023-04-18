@@ -2,6 +2,7 @@ import os
 import psycopg2
 import psycopg2.extras
 import urllib.request
+import time
 
 from vid2blur import blurvid
 from flask import Flask, jsonify, render_template, request,flash,url_for, session, redirect, send_from_directory
@@ -49,6 +50,24 @@ def allowed_video_file(filename):
 def landing():
     return render_template('html/landing.html')
 
+@app.route('/import-video-successfully/<filename>', methods=['POST','GET'])
+def upload_video_successfully(filename):
+    print(session['user_img_file'])
+    # session['user_img_file']
+    # if session['user_img_file']:
+    #     filename = secure_filename(session['user_img_file'])
+    #     img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
+    inpath = os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename)
+    outpath = app.config['UPLOAD_VIDEO_BLUR']
+    blurvid(inpath,outpath,filename)
+    flash("Render is completed","success")
+    time.sleep(5)
+    return redirect(url_for('upload_video'))
+        # time.sleep(5)
+        
+        # return redirect(url_for('upload_video'))
+
+
 @app.route('/import-video')
 def upload_video():
     if 'loggedin' in session:
@@ -58,30 +77,37 @@ def upload_video():
 @app.route('/import-video', methods=['POST','GET'])
 def upload_video_file():
     if 'loggedin' in session:
-        if request.method == 'POST' and \
-            'videofile' in request.files and \
-            'datepost' in request.form and \
-            'timepost' in request.form:
+        if request.method == 'POST' and 'videofile' in request.files:
             _videofile  = request.files['videofile']
             _camerano = request.form['camerano']
             _cameralocation = request.form['cameralocation']
-            _datepost = request.form['datepost']
-            _timepost = request.form['timepost']
-            if _videofile.filename and allowed_video_file(_videofile.filename):
-                filename = secure_filename(_videofile.filename)
-                video_unblur_path = os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename)
-                # _videofile.save(os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename))
-                _videofile.save(video_unblur_path)
-                
-                blurvid(video_unblur_path,app.config['UPLOAD_VIDEO_BLUR'],filename)
             
-            print(filename)
-            print(_camerano)
-            print(_cameralocation)
-            print(_datepost)
-            print(_timepost)
+            if _videofile.filename and allowed_video_file(_videofile.filename): 
+                filename = secure_filename(_videofile.filename)
+            
+            # return render_template('html/import-successfully.html',session = session, filename=filename)
+            
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('SELECT vid_filename FROM videos WHERE vid_filename = %s', (filename,))
+            exist_vid = cursor.fetchone()
+            if exist_vid:
+                flash('This video is already existed', 'danger')
+                return redirect(url_for('upload_video'))
+            else :
+                if len(_camerano) == 0: _camerano = -1
+                if len(_cameralocation) == 0: _cameralocation = "None"
+                
+                video = Video(str(filename),int(_camerano),str(_cameralocation))
+                db.session.add(video)
+                db.session.commit()
+                video_unblur_path = os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename)
+                _videofile.save(video_unblur_path)
+                return render_template('html/import-successfully.html', filename = filename, session = session)
 
-        return render_template('html/import-video.html',session = session)
+                # return redirect(url_for('upload_video_successfully',filename = filename))
+
+            
+        return redirect(url_for('upload_video'))
     return redirect(url_for('signin'))
 
 @app.route('/signin', methods=['POST','GET'])
@@ -216,7 +242,7 @@ def get_search_video():
             _endtime = request.form['endtime']
 
             cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cursor.execute('select * from videos where (vid_datetime between %s and %s) and vid_type = %s', (_startdate+" "+_starttime,_enddate +" "+_endtime,'blur',))
+            cursor.execute('select * from videos where vid_datetime between %s and %s ', (_startdate+" "+_starttime,_enddate +" "+_endtime,))
             # cursor.execute('SELECT * FROM users WHERE user_username = %s', (_username,))
 
             videos = cursor.fetchall()
@@ -232,7 +258,7 @@ def get_search_video():
             # print(_enddate)
             # print(_starttime)
             # print(_endtime)
-        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_UNBLUR,session=session )
+        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_BLUR,session=session )
     return redirect(url_for('signin'))
 
 @app.route('/permission')

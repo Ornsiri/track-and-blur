@@ -24,6 +24,16 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
         integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous" />
 
+    <!-- JQuery + Ajax -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous">
+        </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
+        </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+        crossorigin="anonymous">
+        </script>
 </head>
 
 <body>
@@ -61,15 +71,24 @@
     <main>
         <div class="container py-4">
             <form action="{{ url_for('upload_video_file') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category,message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ message }}</strong>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
                 <div class="p-5 mb-4 bg-light rounded-3">
                     <div class="container-fluid py-5">
                         <h2 class="display-10 fw-bold mb-5">Import video file</h2>
                         <div class="input-group mb-3">
-                            <input type="file" name=videofile class="form-control" id="inputGroupFile" required>
+                            <input type="file" name=videofile class="form-control upload" id="inputGroupFile" required>
                             <label class="input-group-text btn btn-primary" for="inputGroupFile">Upload</label>
                         </div>
                         <small class="text-danger">
-                            * Only video file is valid
+                            * Only .mp4 file is valid
                         </small>
                     </div>
                 </div>
@@ -82,39 +101,28 @@
                                 <span class="input-group-text" id="addon-wrapping">Camera No.</span>
                                 <input type="text" name="camerano" class="form-control" placeholder="Camera No." aria-label="Camera No."
                                     aria-describedby="addon-wrapping">
-                                <small class="invalid-feedback">
+                                <!-- <small class="invalid-feedback">
                                     Camera No. can't be empty
-                                </small>
+                                </small> -->
                 
                             </div>
                             <div class="input-group mb-3">
                                 <span class="input-group-text" id="addon-wrapping">Camera's Location</span>
                                 <input type="text" name="cameralocation" class="form-control" placeholder="Camera's Location" aria-label="Camera's Location"
                                     aria-describedby="addon-wrapping">
-                                <small class="invalid-feedback">
+                                <!-- <small class="invalid-feedback">
                                     Camera Location can't be empty
-                                </small>
+                                </small> -->
                             </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" id="addon-wrapping">Date</span>
-                                <input type="date" name="datepost" class="form-control" placeholder="Date" aria-label="Date"
-                                    aria-describedby="addon-wrapping" required>
-                                <small class="invalid-feedback">
-                                    Date can't be empty
-                                </small>
-                            </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" id="addon-wrapping">Time</span>
-                                <input type="time" name="timepost" class="form-control" placeholder="Time" aria-label="Time"
-                                    aria-describedby="addon-wrapping" required>
-                                <small class="invalid-feedback">
-                                    Time can't be empty
-                                </small>
-                            </div>
+
                             <div class="text-end col-12">
                                 <!-- <a href="{{ url_for('upload_video_file') }}">
                                 </a> -->
-                                <button class="btn btn-primary w-25" type="submit">Import</button>
+                                <button class="btn btn-primary w-25" id="import-btn" onclick="" type="submit">Import</button>
+                                <button class="btn btn-primary" id="load-btn"  type="button" disabled>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Loading...
+                                </button>
 
                             </div>
                         </div>
@@ -140,6 +148,30 @@
             }
             form.classList.add("was-validated");
         }
+
+        $("#import-btn").show();
+        $("#load-btn").hide();
+
+        let importBtn = document.getElementById('import-btn');
+        let loadBtn = document.getElementById('load-btn');
+
+        importBtn.addEventListener('click', () => {
+            if ($('.upload').get(0).files.length === 0) {
+                console.log("No files selected.");
+            } else {
+                $("#import-btn").hide();
+                $("#load-btn").show();
+            }
+        });
+
+        
+
+       
+
+
+
+       
+        
     </script>
 
 </body>
