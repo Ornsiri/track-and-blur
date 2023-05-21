@@ -49,16 +49,24 @@
                     <li><a href="{{ url_for('search') }}" class="nav-link px-2 link-primary">Search</a></li>
                     {% if session['user_type'] == "Admin" %}
                     <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
-                    <li><a href="#" class="nav-link px-2 link-secondary">Permission</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Video
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin_request')}}">Requested</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Uploaded</a></li>
+                        </ul>
+                    </li>
                     {% elif session['user_type'] == "User" %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Video
                         </a>
                         <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Your uploaded</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('request_waiting')}}">Your requested</a></li>
-                    <li><a class="dropdown-item" href="{{ url_for('request_approve')}}">Your approved</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Your uploaded</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('request_waiting')}}">Your requested</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('request_approve')}}">Your approved</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -82,41 +90,98 @@
         <div class="p-5 bg-light rounded-3">
             <div class="container-fluid py-5 bg-white rounded-3 align-middle">
                 <h2 class="display-12 fw-bold ps-2"> Your approved videos</h2>
-                <div class="tab-content" id="status-tab-content">
-                    <div class="list-group">
-                        {% if approved_videos %}
-                        {% for video in approved_videos %}
-                        <div class="list-group-item list-group-item-action">
-                            <div class="d-flex flex-wrap w-100 justify-content-between">
-                                <h5 class="mb-1"></h5>
-                                <small class="text-muted">{{video[13]}}</small>
-                            </div>
-                            <div
-                                class="d-flex flex-wrap justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
-                                <div class="d-flex flex-shrink-0 align-items-center justify-content-center">
-                                    <div class="embed-responsive embed-responsive-16by9">
-                                        <video width="245" height="190" controls>
-                                            <source src="{{session['unblur_path']}}{{video[7]}}" type="video/mp4">
-                                        </video>
-                                    </div>
-                                </div>
-                    
-                                <div class="d-flex flex-grow-1 ps-lg-2 ms-3 justify-content-between flex-wrap align-items-stretch">
-                                    <div class="flex-fill">
-                                        <p class="mb-0"><strong>{{ video[7] }} </strong></p>
-                                        <p><small>{{ video[11] }} | </small> <small>{{ video[12] }}</small></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                        {% else %}
-                        <div class="display-6 text-center p-3">
-                            No approved video
-                        </div>
-                        {% endif %}
+                <nav>
+                    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                        <button class="nav-link active" id="nav-approve-tab" data-bs-toggle="tab" data-bs-target="#nav-approve"
+                            type="button" role="tab" aria-controls="nav-approve" aria-selected="true">Approved</button>
+                        <button class="nav-link" id="nav-reject-tab" data-bs-toggle="tab" data-bs-target="#nav-reject" type="button"
+                            role="tab" aria-controls="nav-reject" aria-selected="false">Rejected</button>
                     </div>
+                </nav>
+                <div class="tab-content" id="status-tab-content">
+                    <div class="tab-pane fade show active" id="nav-approve" role="tabpanel" aria-labelledby="nav-approve-tab" tabindex="0">
+                        <div class="list-group">
+                            {% if approved_videos %}
+                            {% for video in approved_videos %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex flex-wrap w-100 justify-content-between">
+                                    <h5 class="mb-1"></h5>
+                                    <small class="text-muted">{{video[13]}}</small>
+                                </div>
+                                <div
+                                    class="d-flex flex-wrap justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center">
+                                        <div class="embed-responsive embed-responsive-16by9">
+                                            <video width="245" height="190" controls>
+                                                <source src="{{session['unblur_path']}}{{video[7]}}" type="video/mp4">
+                                            </video>
+                                        </div>
+                                    </div>
+                    
+                                    <div class="d-flex flex-grow-1 ps-lg-2 ms-3 justify-content-between flex-wrap align-items-stretch">
+                                        <div class="flex-fill">
+                                            <p class="mb-0"><strong>{{ video[7] }} </strong></p>
+                                            <p><small>{{ video[11] }} | </small> <small>{{ video[12] }}</small></p>
+                                            <p class="text-success">Status : <strong>Approved</strong> </p>
+                                            <p class="text-danger"> 
+                                                <small>* Only the approved videos will be able to see the unblur version</small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="display-6 text-center p-3">
+                                No approved request
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="nav-reject" role="tabpanel" aria-labelledby="nav-reject-tab" tabindex="0">
+                        <div class="list-group">
+                            {% if reject_videos %}
+                            {% for video in reject_videos %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex flex-wrap w-100 justify-content-between">
+                                    <h5 class="mb-1"></h5>
+                                    <small class="text-muted">{{video[13]}}</small>
+                                </div>
+                                <div
+                                    class="d-flex flex-wrap justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                                    <div class="d-flex flex-shrink-0 align-items-center justify-content-center">
+                                        <div class="embed-responsive embed-responsive-16by9">
+                                            <video width="245" height="190" controls>
+                                                Unable to load video
+                                                <!-- <source src="{{session['unblur_path']}}{{video[7]}}" type="video/mp4"> -->
+                                            </video>
+                                        </div>
+                                    </div>
+                        
+                                    <div class="d-flex flex-grow-1 ps-lg-2 ms-3 justify-content-between flex-wrap align-items-stretch">
+                                        <div class="flex-fill">
+                                            <p class="mb-0"><strong>{{ video[7] }} </strong></p>
+                                            <p><small>{{ video[11] }} | </small> <small>{{ video[12] }}</small></p>
+                                            <p class="text-danger">Status : <strong>Rejected</strong> </p>
+                                            <p class="text-danger">
+                                                <small>* Only the approved videos will be able to see the unblur version</small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="display-6 text-center p-3">
+                                No rejected request
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                 </div>
+                
+                
             </div>
         </div>
     </main>

@@ -237,27 +237,44 @@ def get_search_video():
             _enddate = request.form['enddate']
             _starttime = request.form['starttime']
             _endtime = request.form['endtime']
-
+            videos = []
             try: 
 
                 cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-                # cursor.execute('select * from videos where vid_datetime between %s and %s ', (_startdate+" "+_starttime,_enddate +" "+_endtime,))
                 cursor.execute("""
-                select * from videos where vid_datetime 
-                between %s and %s
-                and (vid_id != (
-                    select vid_id from requests where user_id = %s 
-                    and (status = 'Approved' or status = 'Processing')
-                )
-                and (videos.vid_post_by != (
-                    select user_username from users where user_id = %s) 
-                ))""",
-                (_startdate+" "+_starttime,_enddate +" "+_endtime, session['user_id'],session['user_id']))
+                    SELECT *
+                    FROM videos
+                    WHERE vid_datetime BETWEEN %s AND %s
+                    AND (vid_id NOT IN (
+                        SELECT vid_id
+                        FROM requests
+                        WHERE user_id = %s
+                        AND (status = 'Approved' OR status = 'Processing')
+                    ) AND (videos.vid_post_by != (
+                        SELECT user_username
+                        FROM users
+                        WHERE user_id = %s
+                    )))
+                    """,(_startdate+" "+_starttime,_enddate +" "+_endtime, session['user_id'],session['user_id']))
 
+
+                # cursor.execute("""
+                # select * from videos where vid_datetime 
+                # between %s and %s
+                # and (vid_id != (
+                #     select vid_id from requests where user_id = %s 
+                #     and (status = 'Approved' or status = 'Processing')
+                # )
+                # and (videos.vid_post_by != (
+                #     select user_username from users where user_id = %s) 
+                # ))""",
+                # (_startdate+" "+_starttime,_enddate +" "+_endtime, session['user_id'],session['user_id']))
+
+                videos = cursor.fetchall()
+                connection.commit()
+                
                 if 'videos' in session:
                     session.pop('videos')
-                
-                videos = cursor.fetchall()
 
                 if len(videos) > 0:
                     for video in videos:
@@ -324,11 +341,12 @@ def get_search_video():
                         print(video)
                     session['videos'] = videos
                     session['blur_path'] = UPLOAD_VIDEO_BLUR
-                    print(session['blur_path'])
+                    # print(session['blur_path'])
                 else :
                     flash("No video result","danger")
             except psycopg2.Error as e:
                 print("Select query error:", e)
+                connection.rollback()
 
         return render_template('html/search.html', videos = videos,session=session)
     return redirect(url_for('signin'))
@@ -428,11 +446,13 @@ def request_approve():
         try:
             user_id = session['user_id']
             cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE requests.user_id = %s AND status = %s',(user_id,'Approved',))
-            approved_videos = cursor.fetchall()
+            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE requests.user_id = %s AND (status = %s OR status = %s)',(user_id,'Approved','Rejected',))
+            approved_videos = []
+            reject_videos = []
+            videos = cursor.fetchall()
             session['unblur_path'] = UPLOAD_VIDEO_UNBLUR
-            session['approved_videos'] = approved_videos
-            for video in approved_videos:
+            # session['approved_videos'] = approved_videos
+            for video in videos:
                 # add date month year to list
                 video.append(datetime.strftime(video[3],'%d %b %Y'))
                 # add time to list
@@ -490,8 +510,15 @@ def request_approve():
                     elif int(h) > 1:
                         h  = h + " hours ago"
                         video.append(h)
-                
-            return render_template('html/request-approve.html', session = session,approved_videos=approved_videos)
+                # separate status
+                if video[4] == "Approved" :
+                    approved_videos.append(video)
+                elif video[4] == "Rejected" :
+                    reject_videos.append(video)
+                print("Reject: ",reject_videos)
+                print("Approved: ",approved_videos)
+
+            return render_template('html/request-approve.html', session = session,approved_videos=approved_videos,reject_videos= reject_videos)
         except psycopg2.Error as e:
             print("Approved query error:", e)
         return render_template('html/request-approve.html', session = session)
@@ -579,7 +606,26 @@ def admin_request():
     if 'loggedin' in session:
         try:
             cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE status = %s',('Processing',))
+            # cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE status = %s',('Processing',))
+            cursor.execute("""
+                SELECT requests.request_id,
+                requests.vid_id,
+                requests.user_id,
+                requests.date_requested,
+                requests.status,
+                requests.checked_by_admin_id,
+                videos.vid_id,
+                videos.vid_filename,
+                videos.vid_datetime,
+                videos.vid_post_by,
+                videos.user_id,
+                users.user_id,
+                users.user_username
+                FROM requests 
+                JOIN videos ON videos.vid_id = requests.vid_id 
+                JOIN users ON users.user_id = requests.user_id
+                WHERE status = %s
+            """,('Processing',))
             processing_videos = cursor.fetchall()
             session['blur_path'] = UPLOAD_VIDEO_BLUR
             session['processing_videos'] = processing_videos
@@ -671,13 +717,14 @@ def confirm_approve(vid_id):
         return redirect(url_for('admin_request'))
     return redirect(url_for('signin'))
 
-@app.route('/reject-confirmed/<int:vid_id>', methods=['POST', 'GET'])
-def confirm_reject(vid_id):
+@app.route('/reject-confirmed/<int:vid_id>/<int:user_id>', methods=['POST', 'GET'])
+def confirm_reject(vid_id,user_id):
     if 'loggedin' in session:
         try:
-            user_id = session['user_id']
             cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cursor.execute('DELETE FROM requests WHERE vid_id = %s AND user_id = %s RETURNING *', (vid_id, user_id))
+            cursor.execute('UPDATE requests SET status = %s, checked_by_admin_id = %s WHERE vid_id = %s',
+                           ('Rejected', session['user_id'], vid_id))
+            # cursor.execute('DELETE FROM requests WHERE vid_id = %s AND user_id = %s AND status = %s RETURNING * ', (vid_id, user_id,'Processing'))
             connection.commit()
         except psycopg2.Error as e:
             print("Delete query error:", e)

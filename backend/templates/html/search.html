@@ -60,7 +60,26 @@
                 <li><a href="#" class="nav-link px-2 link-secondary">Search</a></li>
                 {% if session['user_type'] == "Admin" %}
                 <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
-                <li><a href="{{ url_for('permission') }}" class="nav-link px-2 link-primary">Permission</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Video
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('admin_request')}}">Requested</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Uploaded</a></li>
+                    </ul>
+                </li>
+                {% elif session['user_type'] == "User" %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Video
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Your uploaded</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('request_waiting')}}">Your requested</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('request_approve')}}">Your approved</a></li>
+                    </ul>
+                </li>
                 {% endif %}
             </ul>
 
@@ -70,11 +89,6 @@
                     <img src="{{ session['user_img_file'] }}" alt="mdo" width="32" height="32" class="rounded-circle">
                 </a>
                 <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
-                    <!-- <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li> -->
                     <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
                 </ul>
             </div>
@@ -83,22 +97,11 @@
 </header>
     <main>
         <div class="container py-4">
+            
             <div class="p-5 mb-4 bg-light rounded-3">
                 <div class="container-fluid py-5">
                     <form action="{{ url_for('get_search_video') }}" method="POST" class="needs-validation" novalidate>
                         <h4 class="display-12 fw-bold mb-5">Search for video</h4>
-                        <div class="row">
-                            <div class="col-sm-100 col-md-100 col-lg-12">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text" id="addon-wrapping">Camera No.</span>
-                                    <input type="text" name="camerano" class="form-control" placeholder="Camera No." aria-label="Camera No."
-                                        aria-describedby="addon-wrapping" >
-                                    <!-- <small class="invalid-feedback">
-                                        Camera No. can't be empty
-                                    </small> -->
-                                </div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col-sm-100 col-md-100 col-lg-6">
                                 <div class="input-group mb-3">
@@ -151,64 +154,87 @@
                     </form>
                 </div>
             </div>
-    
-            <div class="row align-items-md-stretch">
-                <div class="col-md-12">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category,message in messages %}
+                {% if category == "success" %}
+                    <div id="alert-bar" class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <strong>{{ message }}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% elif category == "danger" %}
+                <div class="row align-items-md-stretch">
+                    <div class="col-md-12">
+                        <div class="h-100 p-5 border rounded-3">
+                            <h4 class="display-6 text-center"> No Result Found </h4>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+            {% if videos %}
+            <div class="row align-items-md-stretch ">
+                <div class="col-md-12 text-center">
                     <div class="h-100 p-5 border rounded-3">
                         <h4 class="display-6 text-center"> Result </h4>
-                        
                         <table class="table  table-striped table-hover">
                             <tr>
-                                <th class="col-lg-4 col-md-4 col-sm-12"> Video </th>
-                                <th class="col-lg-2 col-md-2 col-sm-12"> Date Post </th>
-                                <th class="col-lg-2 col-md-2 col-sm-12"> Action </th>
+                                <th class="col-lg-4 col-md-4 col-sm-12 text-center"> Video </th>
+                                <th class="col-lg-2 col-md-2 col-sm-12 text-center"> Posted By</th>
+                                <th class="col-lg-2 col-md-2 col-sm-12 text-center"> Date Posted </th>
+                                <th class="col-lg-2 col-md-2 col-sm-12 text-center"> Request </th>
                             </tr>
                             {% for video in videos %}
-                            <tr>
-                                <td class="col-lg-4 col-md-4 col-sm-12"> <video src="{{ video_path + "output_" + video[1] }}" width="240" controls></video></td>
-                                <td class="col-lg-2 col-md-2 col-sm-12 video-datail"> {{ video[4] }} </td>
-                                <td class="col-lg-2 col-md-2 col-sm-12"> 
-                                    <h6 class="video-link">{{ video_path + "output_" + video[1] }}</h6>
-                                    <h6 class="video-name"> {{ video[1] }} </h6>
-                                    <button class="btn btn-primary me-3 video-watch"  data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                        <span>
-                                            <i class="fas fa-eye"></i>
-                                        </span> Watch
-                                    </button>
-                                    <div class="modal text-center" id="exampleModal" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header text-center">
-                                                    <h6 class="video-modal-header">  </h6>
-                                                </div>
-                                                <div class="modal-body w-100">
-                                                    <!-- 1:1 aspect ratio -->
-                                                    <!-- <video class="embed-responsive-item video-modal" controls src="{{ video_path + video[3] }}" frameborder="0"
-                                                        allowfullscreen></video> -->
-                                                    
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button button-close" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                <tr>
+                                    <td class="col-lg-3 col-md-3 col-sm-12 text-center"> 
+                                        <div class="embed-responsive embed-responsive-16by9">
+                                            <video controls width="245" height="190" class="embed-responsive-item">
+                                                <source src="{{ video_path + "output_" + video[1] }}" type="video/mp4" />
+                                            </video>
+                                        </div>                                    
+                                    </td>
+                                    <td class="col-lg-2 col-md-2 col-sm-12 text-center"> <strong>{{ video[3] }}</strong></td>
+                                    <td class="col-lg-2 col-md-2 col-sm-12 video-detail text-center"> {{ video[5] }} | {{ video[6] }} </td>
+                                    <td class="col-lg-2 col-md-2 col-sm-12 text-center">
+                                        
+                                        <button class="btn btn-danger me-3" data-id='{{ video.vid_id }}' id='{{ video.vid_id }}' data-bs-toggle="modal" data-bs-target="#requestModal">
+                                            <span>
+                                                <i class="fas fa-unlock"></i>
+                                            </span> Request Unblur
+                                        </button>
+                                        
+                                        <!-- Request Modal -->
+                                        <div class="modal fade" id='requestModal' data-bs-backdrop="static" tabindex="-1" aria-labelledby="requestModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-body">
+                                                        Are you sure you want to perform this action?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                                        <a href="{{ url_for('request_unblur',vid_id= video.vid_id) }}">
+                                                            <button type="button" class="btn btn-danger" data-id='{{ video.vid_id }}' id="confirm-btn" >Yes</button>
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                            
-                                </td>
+                                                                               
                                 
-                            </tr>
-                            {% endfor %}
+                                        <button class="btn btn-secondary me-3 waiting-btn disabled visually-hidden">
+                                            <span>
+                                                <i class="fas fa-clock"></i>
+                                            </span> Processing
+                                        </button>
 
-                            <!-- <tr>
-                                <td> Test </td>
-                                <td> Test </td>
-                                <td> Test </td>
-                                <td> Test </td>
-                            </tr> -->
+                                    </td>
+                                </tr>
+                            {% endfor %}
                         </table>
                     </div>
                 </div>
             </div>
+            {% endif %}
+            {% endwith %}
         </div>
     </main>
     
@@ -216,7 +242,7 @@
         &copy; Blur and Track, Thammasat University 2023
     </footer>
 
-    <script>
+    <script type="text/javascript">
         var form = document.querySelector(".needs-validation");
         form.addEventListener("submit", validator);
 
@@ -229,23 +255,15 @@
             form.classList.add("was-validated");
         }
 
-        $(function () {
-            $(".video-link").hide();
-            $(".video-name").hide();
-            
-            $(".video-watch").click(function () {
-                var name = $(this).parents("td").find(".video-name").text();
-                var link = $(this).parents("td").find(".video-link").text();
-                var video = "";
-                video += "<video class=\"embed-responsive-item w-100 \" controls  src=\"" + link + "\" frameborder=\"0\" allowfullscreen></video> "
-                // console.log(video);
-                $(".modal-body").empty();
-                $(".modal-body").append(video);
-                $(".video-modal-header").empty();
-                $(".video-modal-header").append(name);
-            })
-
-        });
+        
+       $(document).ready(function () {
+            $("#alert-bar").hide();
+            $("#alert-bar").fadeTo(2000, 500).slideUp(500, function () {
+                $("#alert-bar").slideUp(500);
+            });
+        })
+        
+        
 
     </script>
 </body>

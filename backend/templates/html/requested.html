@@ -58,7 +58,6 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('admin_request')}}">Requested</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin_permission')}}">Permission</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Uploaded</a></li>
                         </ul>
                     </li>
@@ -91,7 +90,7 @@
                             <div class="list-group-item list-group-item-action">
                                 <div class="d-flex flex-wrap w-100 justify-content-between">
                                     <h5 class="mb-1"></h5>
-                                    <small class="text-muted">{{ video[13] }}</small>
+                                    <small class="text-muted">{{ video[15] }}</small>
                                 </div>
                                 <div
                                     class="d-flex flex-wrap justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
@@ -106,7 +105,8 @@
                                     <div class="d-flex flex-grow-1 ps-lg-2 ms-3 justify-content-between flex-wrap align-items-stretch">
                                         <div class="flex-fill">
                                             <p class="mb-0"><strong>{{ video[7] }} </strong></p>
-                                            <p><small>{{ video[11] }} | </small> <small>{{ video[12] }}</small></p>
+                                            <p><small>{{ video[13] }} | </small> <small>{{ video[14] }}</small></p>
+                                            <p>Requested by : <strong> {{ video[12] }} </strong></p>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center" >
@@ -154,7 +154,7 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                                            <a href="{{ url_for('confirm_reject', vid_id=video.vid_id) }}">
+                                            <a href="{{ url_for('confirm_reject', vid_id=video.vid_id,user_id = video[11]) }}">
                                                 <button type="button" class="btn btn-danger" id="reject-btn">Yes</button>
                                             </a>
                                         </div>
