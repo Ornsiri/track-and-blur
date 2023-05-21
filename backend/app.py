@@ -3,6 +3,8 @@ import psycopg2
 import psycopg2.extras
 import urllib.request
 import time
+import json
+from datetime import datetime, timedelta
 
 from vid2blur import blurvid
 from flask import Flask, jsonify, render_template, request,flash,url_for, session, redirect, send_from_directory
@@ -15,10 +17,12 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 env_config = os.getenv("APP_SETTINGS", "config.DevelopmentConfig")
 app.config.from_object(env_config)
+app.permanent_session_lifetime = timedelta(hours=1)
 db=SQLAlchemy(app)
 
 from models.User import User
 from models.Video import Video
+from models.Request import Request
 
 UPLOAD_USER_IMG = 'static/assets/upload_usr_img'
 UPLOAD_VIDEO_BLUR = 'static/assets/upload_videos/blur/'
@@ -63,9 +67,6 @@ def upload_video_successfully(filename):
     flash("Render is completed","success")
     time.sleep(5)
     return redirect(url_for('upload_video'))
-        # time.sleep(5)
-        
-        # return redirect(url_for('upload_video'))
 
 
 @app.route('/import-video')
@@ -79,8 +80,6 @@ def upload_video_file():
     if 'loggedin' in session:
         if request.method == 'POST' and 'videofile' in request.files:
             _videofile  = request.files['videofile']
-            _camerano = request.form['camerano']
-            _cameralocation = request.form['cameralocation']
             
             if _videofile.filename and allowed_video_file(_videofile.filename): 
                 filename = secure_filename(_videofile.filename)
@@ -94,10 +93,8 @@ def upload_video_file():
                 flash('This video is already existed', 'danger')
                 return redirect(url_for('upload_video'))
             else :
-                if len(_camerano) == 0: _camerano = -1
-                if len(_cameralocation) == 0: _cameralocation = "None"
                 
-                video = Video(str(filename),int(_camerano),str(_cameralocation))
+                video = Video(str(filename),session['user_username'],session['user_id'])
                 db.session.add(video)
                 db.session.commit()
                 video_unblur_path = os.path.join(app.config['UPLOAD_VIDEO_UNBLUR'], filename)
@@ -105,7 +102,6 @@ def upload_video_file():
                 return render_template('html/import-successfully.html', filename = filename, session = session)
 
                 # return redirect(url_for('upload_video_successfully',filename = filename))
-
             
         return redirect(url_for('upload_video'))
     return redirect(url_for('signin'))
@@ -120,8 +116,10 @@ def signin():
         cursor.execute('SELECT * FROM users WHERE user_username = %s', (_username,))
         user = cursor.fetchone()
         print(user)
+
         if user:
             if check_password_hash(user['user_password'],_password):
+                session.permanant_session_lifetime = True
                 if user['user_type'] == "Admin":
                     session['loggedin'] = True
                     session['user_id'] = user['user_id']
@@ -132,14 +130,13 @@ def signin():
                     session['user_lname'] = user['user_lname']
                     session['user_tel'] = user['user_tel']
                     session['user_dob'] = user['user_dob']
-                    session['user_department'] = user['user_department']
                     session['user_type'] = user['user_type']
                     session['user_img_file'] = user['user_img_file']
                     if session['user_img_file']:
                         filename = secure_filename(session['user_img_file'])
                         img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
                         session['user_img_file'] = img_filepath
-                    # print(img_filepath)
+                    print(img_filepath)
                     # print(session)
                     return redirect(url_for('upload_video'))
                 
@@ -153,13 +150,15 @@ def signin():
                     session['user_lname'] = user['user_lname']
                     session['user_tel'] = user['user_tel']
                     session['user_dob'] = user['user_dob']
-                    session['user_department'] = user['user_department']
                     session['user_type'] = user['user_type']
                     session['user_img_file'] = user['user_img_file']
                     if session['user_img_file']:
                         filename = secure_filename(session['user_img_file'])
                         img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
+                        session['user_img_file'] = img_filepath
                     # print(img_filepath)
+                    # print(session['user_img_file'])
+
                     return redirect(url_for('upload_video'))
             else:
                 flash("Invalid username or password","danger")
@@ -177,17 +176,14 @@ def signup():
         'password' in request.form and \
         'tel' in request.form and \
         'dob' in request.form and \
-        'department' in request.form and \
         'user_type' in request.form and \
         'user_register_img' in request.files:
-        
             _fname = request.form['fname']
             _lname = request.form['lname']
             _email = request.form['email']
             _password = request.form['password']
             _password = generate_password_hash(_password) 
             _tel = request.form['tel']
-            _department = request.form['department']
             _dob = request.form['dob']
             _user_type = request.form['user_type']
             _user_img_file = request.files['user_register_img']
@@ -203,11 +199,11 @@ def signup():
                     filename = secure_filename(_user_img_file.filename)
                     _user_img_file.save(os.path.join(app.config['UPLOAD_USER_IMG'], filename))
                 else :
-                    _user_img_file = "user.png"
+                    _user_img_file.filename = "user.png"
                 
                 if str(_user_type)=="1":
                     _user_type = "Admin"
-                    user = User(_fname,_lname,_email,_password,_tel,_dob,_department,_user_img_file.filename,_user_type)
+                    user = User(_fname,_lname,_email,_password,_tel,_dob,_user_img_file.filename,_user_type)
                     db.session.add(user)
                     db.session.commit()
                     flash('A new user successfully added', 'success')
@@ -215,11 +211,12 @@ def signup():
 
                 elif str(_user_type) == "2":
                     _user_type = "User"
-                    user = User(_fname,_lname,_email,_password,_tel,_dob,_department,_user_img_file,_user_type)
+                    user = User(_fname,_lname,_email,_password,_tel,_dob,_user_img_file.filename,_user_type)
                     db.session.add(user)
                     db.session.commit()
                     flash('A new user successfully added', 'success')
                     return render_template('html/signup.html', session=session)
+        # return render_template('html/signup.html', session=session)
         return render_template('html/signup.html', session=session)
     return redirect(url_for('signin'))
 
@@ -235,55 +232,462 @@ def get_search_video():
         if request.method == 'POST' and \
         'startdate' in request.form and \
         'enddate' in request.form :
-            _camerano = request.form['camerano']
+            # _camerano = request.form['camerano']
             _startdate = request.form['startdate']
             _enddate = request.form['enddate']
             _starttime = request.form['starttime']
             _endtime = request.form['endtime']
 
-            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            cursor.execute('select * from videos where vid_datetime between %s and %s ', (_startdate+" "+_starttime,_enddate +" "+_endtime,))
-            # cursor.execute('SELECT * FROM users WHERE user_username = %s', (_username,))
+            try: 
 
-            videos = cursor.fetchall()
+                cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                # cursor.execute('select * from videos where vid_datetime between %s and %s ', (_startdate+" "+_starttime,_enddate +" "+_endtime,))
+                cursor.execute("""
+                select * from videos where vid_datetime 
+                between %s and %s
+                and (vid_id != (
+                    select vid_id from requests where user_id = %s 
+                    and (status = 'Approved' or status = 'Processing')
+                )
+                and (videos.vid_post_by != (
+                    select user_username from users where user_id = %s) 
+                ))""",
+                (_startdate+" "+_starttime,_enddate +" "+_endtime, session['user_id'],session['user_id']))
 
-            if len(videos) == 0:
-                flash("No video result","danger")
+                if 'videos' in session:
+                    session.pop('videos')
+                
+                videos = cursor.fetchall()
 
-            # for video in videos:
-            #     print(video)
-        
-            # print(_camerano)
-            # print(_startdate)
-            # print(_enddate)
-            # print(_starttime)
-            # print(_endtime)
-        return render_template('html/search.html', videos = videos, video_path = UPLOAD_VIDEO_BLUR,session=session )
+                if len(videos) > 0:
+                    for video in videos:
+                        print(video)
+                        # add date month year to list
+                        video.append(datetime.strftime(video[2],'%d %b %Y'))
+                        # add time to list
+                        t = datetime.strftime(video[2],'%H:%M')
+                        if 0 <= int(t[:2]) < 12:
+                            t = "AM"
+                        else :
+                            t = "PM"
+                        day_upload = video[2]
+                        video.append(datetime.strftime(video[2],'%H:%M') + " " + t)
+                        # add day active to list
+                        today = datetime.now()
+                        dt = today - day_upload
+                        dt = str(dt)
+                        print(dt)
+                        print(today)
+                        if ',' in dt:
+                            dt = dt.split(",")
+                            d = dt[0]
+                            h,m,s = dt[1].split(":")
+                            if int(d[0]) < 1:
+                                if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                                    s = "Just now"
+                                    video.append(s)
+                                elif int(h)==0 and int(m)  == 1:
+                                    m = m + " minute ago"
+                                    video.append(m)
+                                elif int(h)==0 and int(m) > 1:
+                                    m = m + " minutes ago"
+                                    video.append(m)
+                                elif int(h) == 1:
+                                    h  = h + " hour ago"
+                                    video.append(h)
+                                elif int(h) > 1:
+                                    h  = h + " hours ago"
+                                    video.append(h)
+                            elif int(d[0]) == 1:
+                                d = d[0] + " day ago"
+                                video.append(d)
+                            else:
+                                d = d + " ago"
+                                video.append(d)
+                        else :
+                            h,m,s = dt.split(":")
+                            if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                                s = "Just now"
+                                video.append(s)
+                            elif int(h)==0 and int(m)  == 1:
+                                m = m + " minute ago"
+                                video.append(m)
+                            elif int(h)==0 and int(m) > 1:
+                                m = m + " minutes ago"
+                                video.append(m)
+                            elif int(h) == 1:
+                                h  = h + " hour ago"
+                                video.append(h)
+                            elif int(h) > 1:
+                                h  = h + " hours ago"
+                                video.append(h)
+                        print(video)
+                    session['videos'] = videos
+                    session['blur_path'] = UPLOAD_VIDEO_BLUR
+                    print(session['blur_path'])
+                else :
+                    flash("No video result","danger")
+            except psycopg2.Error as e:
+                print("Select query error:", e)
+
+        return render_template('html/search.html', videos = videos,session=session)
     return redirect(url_for('signin'))
 
-@app.route('/permission')
-def permission():
+@app.route('/search-video/request-unblur/<int:vid_id>',methods=['POST','GET'] )
+def request_unblur(vid_id):
     if 'loggedin' in session:
-        # if session['user_img_file']:
-        #     filename = secure_filename(session['user_img_file'])
-        #     img_filepath = os.path.join(app.config['UPLOAD_USER_IMG'],filename)
+        try:
+            user_id = session['user_id']
+            request = Request(vid_id,user_id)
+            db.session.add(request)
+            db.session.commit()
+            flash("Your request was sent","success")
+        except:
+            flash("Error, Please try again later","danger")
+        return redirect(url_for('search'))
+    return redirect(url_for('signin'))
+
+@app.route('/uploaded',methods=['POST','GET'])
+def request_upload():
+    if 'loggedin' in session:
+        try:
+            user_id = session['user_id']
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('SELECT * FROM videos WHERE user_id = %s',(user_id,))
+            uploaded_videos = cursor.fetchall()
+            session['unblur_path'] = UPLOAD_VIDEO_UNBLUR
+            session['uploaded_videos'] = uploaded_videos
+            for video in uploaded_videos:
+                # add date month year to list
+                video.append(datetime.strftime(video[2],'%d %b %Y'))
+                # add time to list
+                t = datetime.strftime(video[2],'%H:%M')
+                if 0 <= int(t[:2]) < 12:
+                    t = "AM"
+                else :
+                    t = "PM"
+                day_upload = video[2]
+                video.append(datetime.strftime(video[2],'%H:%M') + " " + t)
+                # add day active to list
+                today = datetime.now()
+                dt = today - day_upload
+                dt = str(dt)
+                if ',' in dt:
+                    dt = dt.split(",")
+                    d = dt[0]
+                    h,m,s = dt[1].split(":")
+                    if int(d[0]) < 1:
+                        if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                            s = "Just now"
+                            video.append(s)
+                        elif int(h)==0 and int(m)  == 1:
+                            m = m + " minute ago"
+                            video.append(m)
+                        elif int(h)==0 and int(m) > 1:
+                            m = m + " minutes ago"
+                            video.append(m)
+                        elif int(h) == 1:
+                            h  = h + " hour ago"
+                            video.append(h)
+                        elif int(h) > 1:
+                            h  = h + " hours ago"
+                            video.append(h)
+                    elif int(d[0]) == 1:
+                        d = d[0] + " day ago"
+                        video.append(d)
+                    else:
+                        d = d + " ago"
+                        video.append(d)
+                else :
+                    h,m,s = dt.split(":")
+                    if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                        s = "Just now"
+                        video.append(s)
+                    elif int(h)==0 and int(m)  == 1:
+                        m = m + " minute ago"
+                        video.append(m)
+                    elif int(h)==0 and int(m) > 1:
+                        m = m + " minutes ago"
+                        video.append(m)
+                    elif int(h) == 1:
+                        h  = h + " hour ago"
+                        video.append(h)
+                    elif int(h) > 1:
+                        h  = h + " hours ago"
+                        video.append(h)
+                # print(video)
+            return render_template('html/request-upload.html', session = session,uploaded_videos=uploaded_videos)
+        except psycopg2.Error as e:
+            print("Uploaded query error:", e)
+        return render_template('html/request-upload.html', session = session)
+    return redirect(url_for('signin'))
+
+@app.route('/approved')
+def request_approve():
+    if 'loggedin' in session:
+        try:
+            user_id = session['user_id']
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE requests.user_id = %s AND status = %s',(user_id,'Approved',))
+            approved_videos = cursor.fetchall()
+            session['unblur_path'] = UPLOAD_VIDEO_UNBLUR
+            session['approved_videos'] = approved_videos
+            for video in approved_videos:
+                # add date month year to list
+                video.append(datetime.strftime(video[3],'%d %b %Y'))
+                # add time to list
+                t = datetime.strftime(video[3],'%H:%M')
+                if 0 <= int(t[:2]) < 12:
+                    t = "AM"
+                else :
+                    t = "PM"
+                day_upload = video[3]
+                video.append(datetime.strftime(video[3],'%H:%M') + " " + t)
+                # add day active to list
+                today = datetime.now()
+                dt = today - day_upload
+                dt = str(dt)
+                if ',' in dt:
+                    dt = dt.split(",")
+                    d = dt[0]
+                    h,m,s = dt[1].split(":")
+                    if int(d[0]) < 1:
+                        if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                            s = "Just now"
+                            video.append(s)
+                        elif int(h)==0 and int(m)  == 1:
+                            m = m + " minute ago"
+                            video.append(m)
+                        elif int(h)==0 and int(m) > 1:
+                            m = m + " minutes ago"
+                            video.append(m)
+                        elif int(h) == 1:
+                            h  = h + " hour ago"
+                            video.append(h)
+                        elif int(h) > 1:
+                            h  = h + " hours ago"
+                            video.append(h)
+                    elif int(d[0]) == 1:
+                        d = d[0] + " day ago"
+                        video.append(d)
+                    else:
+                        d = d + " ago"
+                        video.append(d)
+                else :
+                    h,m,s = dt.split(":")
+                    if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                        s = "Just now"
+                        video.append(s)
+                    elif int(h)==0 and int(m)  == 1:
+                        m = m + " minute ago"
+                        video.append(m)
+                    elif int(h)==0 and int(m) > 1:
+                        m = m + " minutes ago"
+                        video.append(m)
+                    elif int(h) == 1:
+                        h  = h + " hour ago"
+                        video.append(h)
+                    elif int(h) > 1:
+                        h  = h + " hours ago"
+                        video.append(h)
+                
+            return render_template('html/request-approve.html', session = session,approved_videos=approved_videos)
+        except psycopg2.Error as e:
+            print("Approved query error:", e)
+        return render_template('html/request-approve.html', session = session)
+    return redirect(url_for('signin'))
+
+
+@app.route('/waiting')
+def request_waiting():
+    if 'loggedin' in session:
+        try:
+            user_id = session['user_id']
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE requests.user_id = %s AND status = %s',(user_id,'Processing',))
+            processing_videos = cursor.fetchall()
+            session['unblur_path'] = UPLOAD_VIDEO_UNBLUR
+            session['blur_path'] = UPLOAD_VIDEO_BLUR
+            session['processing_videos'] = processing_videos
+            for video in processing_videos:
+                # add date month year to list
+                video.append(datetime.strftime(video[3],'%d %b %Y'))
+                # add time to list
+                t = datetime.strftime(video[3],'%H:%M')
+                if 0 <= int(t[:2]) < 12:
+                    t = "AM"
+                else :
+                    t = "PM"
+                day_upload = video[3]
+                video.append(datetime.strftime(video[3],'%H:%M') + " " + t)
+                # add day active to list
+                today = datetime.now()
+                dt = today - day_upload
+                dt = str(dt)
+                if ',' in dt:
+                    dt = dt.split(",")
+                    d = dt[0]
+                    h,m,s = dt[1].split(":")
+                    if int(d[0]) < 1:
+                        if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                            s = "Just now"
+                            video.append(s)
+                        elif int(h)==0 and int(m)  == 1:
+                            m = m + " minute ago"
+                            video.append(m)
+                        elif int(h)==0 and int(m) > 1:
+                            m = m + " minutes ago"
+                            video.append(m)
+                        elif int(h) == 1:
+                            h  = h + " hour ago"
+                            video.append(h)
+                        elif int(h) > 1:
+                            h  = h + " hours ago"
+                            video.append(h)
+                    elif int(d[0]) == 1:
+                        d = d[0] + " day ago"
+                        video.append(d)
+                    else:
+                        d = d + " ago"
+                        video.append(d)
+                else :
+                    h,m,s = dt[0].split(":")
+                    if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                        s = "Just now"
+                        video.append(s)
+                    elif int(h)==0 and int(m)  == 1:
+                        m = m + " minute ago"
+                        video.append(m)
+                    elif int(h)==0 and int(m) > 1:
+                        m = m + " minutes ago"
+                        video.append(m)
+                    elif int(h) == 1:
+                        h  = h + " hour ago"
+                        video.append(h)
+                    elif int(h) > 1:
+                        h  = h + " hours ago"
+                        video.append(h)
+                print(video)
+            return render_template('html/request-waiting.html', session = session,processing_videos=processing_videos)
+        except :
+            print("Waiting query is error")
+        return render_template('html/request-waiting.html', session = session)
+    return redirect(url_for('signin'))
+
+@app.route('/requested')
+def admin_request():
+    if 'loggedin' in session:
+        try:
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('SELECT * FROM requests JOIN videos ON videos.vid_id = requests.vid_id WHERE status = %s',('Processing',))
+            processing_videos = cursor.fetchall()
+            session['blur_path'] = UPLOAD_VIDEO_BLUR
+            session['processing_videos'] = processing_videos
+            for video in processing_videos:
+                # add date month year to list
+                video.append(datetime.strftime(video[3],'%d %b %Y'))
+                # add time to list
+                t = datetime.strftime(video[3],'%H:%M')
+                if 0 <= int(t[:2]) < 12:
+                    t = "AM"
+                else :
+                    t = "PM"
+                day_upload = video[3]
+                video.append(datetime.strftime(video[3],'%H:%M') + " " + t)
+                # add day active to list
+                today = datetime.now()
+                dt = today - day_upload
+                dt = str(dt)
+                if ',' in dt:
+                    dt = dt.split(",")
+                    d = dt[0]
+                    h,m,s = dt[1].split(":")
+                    if int(d[0]) < 1:
+                        if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                            s = "Just now"
+                            video.append(s)
+                        elif int(h)==0 and int(m)  == 1:
+                            m = m + " minute ago"
+                            video.append(m)
+                        elif int(h)==0 and int(m) > 1:
+                            m = m + " minutes ago"
+                            video.append(m)
+                        elif int(h) == 1:
+                            h  = h + " hour ago"
+                            video.append(h)
+                        elif int(h) > 1:
+                            h  = h + " hours ago"
+                            video.append(h)
+                    elif int(d[0]) == 1:
+                        d = d[0] + " day ago"
+                        video.append(d)
+                    else:
+                        d = d + " ago"
+                        video.append(d)
+                else :
+                    h,m,s = dt.split(":")
+                    if int(h)==0 and int(m) == 0 and float(s) < 60: 
+                        s = "Just now"
+                        video.append(s)
+                    elif int(h)==0 and int(m)  == 1:
+                        m = m + " minute ago"
+                        video.append(m)
+                    elif int(h)==0 and int(m) > 1:
+                        m = m + " minutes ago"
+                        video.append(m)
+                    elif int(h) == 1:
+                        h  = h + " hour ago"
+                        video.append(h)
+                    elif int(h) > 1:
+                        h  = h + " hours ago"
+                        video.append(h)
+                print(video)
+            return render_template('html/requested.html', session = session,processing_videos=processing_videos)
+        except psycopg2.Error as e:
+            print("Select query error:", e)
+        return render_template('html/requested.html', session=session)
+    return redirect(url_for('signin'))
+
+
+@app.route('/permission')
+def admin_permission():
+    if 'loggedin' in session:
         return render_template('html/permission.html', session=session)
     return redirect(url_for('signin'))
 
+
+@app.route('/approve-confirmed/<int:vid_id>', methods=['POST','GET'])
+def confirm_approve(vid_id):
+    if 'loggedin' in session:
+        try:
+            user_id = session['user_id']
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('UPDATE requests SET status = %s, checked_by_admin_id = %s WHERE vid_id = %s',
+                           ('Approved', user_id, vid_id))
+            connection.commit()
+        except psycopg2.Error as e:
+            print("Update query error:", e)
+        
+        return redirect(url_for('admin_request'))
+    return redirect(url_for('signin'))
+
+@app.route('/reject-confirmed/<int:vid_id>', methods=['POST', 'GET'])
+def confirm_reject(vid_id):
+    if 'loggedin' in session:
+        try:
+            user_id = session['user_id']
+            cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cursor.execute('DELETE FROM requests WHERE vid_id = %s AND user_id = %s RETURNING *', (vid_id, user_id))
+            connection.commit()
+        except psycopg2.Error as e:
+            print("Delete query error:", e)
+
+        return redirect(url_for('admin_request'))
+    return redirect(url_for('signin'))
+
+
 @app.route('/logout')
 def logout():
-    # session.pop('loggedin', None)
-    # session.pop('user_id', None)
-    # session.pop('user_username', None)
-    # session.pop('user_password', None) 
-    # session.pop('user_email', None)
-    # session.pop('user_fname', None)
-    # session.pop('user_lname',None)
-    # session.pop('user_tel',None) 
-    # session.pop('user_dob', None)
-    # session.pop('user_department',None)
-    # session.pop('user_type', None)
-    # session.pop('user_img_file',None)
     session.clear()
     return redirect(url_for('signin'))
 

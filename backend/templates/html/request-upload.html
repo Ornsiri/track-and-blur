@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.84.0">
+    <!-- <title>Jumbotron example · Bootstrap v5.0</title> -->
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/jumbotron/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <!-- font awesome  -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous" />
+
+    <!-- Header CSS
+    <link href="../css/headers.css" rel="stylesheet"> -->
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <header class="p-3 mb-3 border-bottom">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center">
+                <ul class="nav col-10 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="{{ url_for('upload_video')}}" class="nav-link px-2 link-primary">Import</a></li>
+                    <li><a href="{{ url_for('search') }}" class="nav-link px-2 link-primary">Search</a></li>
+                    {% if session['user_type'] == "Admin" %}
+                    <li><a href="{{ url_for('signup') }}" class="nav-link px-2 link-primary">Register</a></li>
+                    <li><a href="#" class="nav-link px-2 link-secondary">Permission</a></li>
+                    {% elif session['user_type'] == "User" %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Video
+                        </a>
+                        <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{{ url_for('request_upload')}}">Your uploaded</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('request_waiting')}}">Your requested</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('request_approve')}}">Your approved</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <div class="dropdown col-2 text-end">
+                    <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ session['user_img_file'] }}" alt="mdo" width="32" height="32"
+                            class="rounded-circle">
+                    </a>
+                    <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser">
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Sign out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-4">
+        <div class="p-5 bg-light rounded-3">
+            <div class="container-fluid py-5 bg-white rounded-3 align-middle">
+                <h2 class="display-12 fw-bold ps-2"> Your uploaded videos</h2>
+                <div class="list-group">
+                    {% if uploaded_videos %}
+                    {% for video in uploaded_videos %}
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex flex-wrap w-100 justify-content-between">
+                            <h5 class="mb-1"></h5>
+                            <small class="text-muted">{{ video[7] }}</small>
+                        </div>
+                        <div
+                            class="d-flex flex-wrap justify-content-between justify-content-lg-end justify-content-md-between justify-content-sm-between mb-3">
+                            <div class="d-flex flex-shrink-0 align-items-center justify-content-center">
+                                <div class="embed-responsive embed-responsive-16by9">
+                                    <video width="245" height="190" controls>
+                                        <source src="{{session['unblur_path']}}{{video[1]}}" type="video/mp4">
+                                    </video>
+                                </div>
+                            </div>
+                
+                            <div class="d-flex flex-grow-1 ps-lg-2 ms-3 justify-content-between flex-wrap align-items-stretch">
+                                <div class="flex-fill">
+                                    <p class="mb-0"><strong> {{video[1]}} </strong></p>
+                                    <p><small> {{video[5]}} | {{video[6]}}</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="display-6 text-center p-3">
+                        No uploaded video
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="ps-5 mb-3 pt-2 text-muted border-top">
+        &copy; Blur and Track, Thammasat University 2023
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <script>
+        var form = document.querySelector(".needs-validation");
+        form.addEventListener("submit", validator);
+
+        'use strict'
+        // Form validation
+        function validator(e) {
+            if (form.checkValidity() == false) {
+                e.preventDefault();
+            }
+            form.classList.add("was-validated");
+        }
+
+        $(document).ready(function () {
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                var target = $(e.target).attr("href") // activated tab
+                alert(target);
+            });
+        })
+
+
+    </script>
+
+
+
+</body>
+
+</html>

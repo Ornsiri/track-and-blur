@@ -7,18 +7,18 @@ from app import db
 class Video(db.Model):
     __tablename__ = "videos"
     vid_id = db.Column(Integer, primary_key=True, nullable=False)
-    vid_camera_no = db.Column(Integer, nullable=True)
-    vid_datetime = db.Column(DateTime, nullable=False)
     vid_filename = db.Column(String, nullable=False)
-    vid_type = db.Column(String, nullable=False)
+    vid_datetime = db.Column(DateTime, nullable=False)
+    vid_post_by = db.Column(String,nullable=False)
+    user_id = db.Column(Integer,nullable=False)
 
-
-    def __init__(self,vid_camera_no, vid_datetime, vid_filename, vid_type):
+    def __init__(self,vid_filename,vid_post_by,user_id):
         self.vid_id
-        self.vid_camera_no = vid_camera_no
-        self.vid_datetime = vid_datetime
         self.vid_filename = vid_filename
-        self.vid_type = vid_type
+        self.vid_datetime = datetime.now()
+        self.vid_post_by = vid_post_by
+        self.user_id = user_id
+        
         
     
     
